@@ -82,13 +82,13 @@ bool Judge_Collision(Robot x, Robot y)
 	{
 		for (int j = 0; j < 4; j++)
 		{
-			if ((getLength(a.vertex[i], b.vertex[j]) + getLength(a.vertex[i + 1], b.vertex[j])) < (getLength(a.vertex[i], a.vertex[i + 1]) + 0.15))
+			if ((getLength(a.vertex[i], b.vertex[j]) + getLength(a.vertex[i + 1], b.vertex[j])) < (getLength(a.vertex[i], a.vertex[i + 1]) + 0.2))
 			{
 				return true;
 			}
 			if (i == 0)
 			{
-				if ((getLength(a.vertex[0], b.vertex[j]) + getLength(a.vertex[3], b.vertex[j])) < (getLength(a.vertex[0], a.vertex[3]) + 0.15))
+				if ((getLength(a.vertex[0], b.vertex[j]) + getLength(a.vertex[3], b.vertex[j])) < (getLength(a.vertex[0], a.vertex[3]) + 0.2))
 				{
 					return true;
 				}
@@ -98,13 +98,13 @@ bool Judge_Collision(Robot x, Robot y)
 		{
 			for (int j = 0; j < 4; j++)
 			{
-				if ((getLength(b.vertex[i], a.vertex[j]) + getLength(b.vertex[i + 1], a.vertex[j])) < (getLength(b.vertex[i], b.vertex[i + 1]) + 0.15))
+				if ((getLength(b.vertex[i], a.vertex[j]) + getLength(b.vertex[i + 1], a.vertex[j])) < (getLength(b.vertex[i], b.vertex[i + 1]) + 0.2))
 				{
 					return true;
 				}
 				if (i == 0)
 				{
-					if ((getLength(b.vertex[0], a.vertex[j]) + getLength(b.vertex[3], a.vertex[j])) < (getLength(b.vertex[0], b.vertex[3]) + 0.15))
+					if ((getLength(b.vertex[0], a.vertex[j]) + getLength(b.vertex[3], a.vertex[j])) < (getLength(b.vertex[0], b.vertex[3]) + 0.2))
 					{
 						return true;
 					}
