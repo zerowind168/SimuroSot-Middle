@@ -1,0 +1,1 @@
+The "images" folder, "RSViewer.dir" and "Soccerhelp.htm" files are for WorldModel.exe which is designed by Moon, Dr Jun Jo, Michael Pagano, Anthony, Greg Cranitch, Karen Noller (in no particular order).We would like to thank them for their great contributions.
