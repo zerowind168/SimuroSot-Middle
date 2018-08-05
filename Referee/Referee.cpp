@@ -2140,9 +2140,12 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 						{
 							if (Judge_Collision(statespace.home[i], statespace.home[robot]))
 							{
-								statespace.gameState = PM_FreeBall_LeftBot;
+								//There are more than one blue robot on the side.
+								//So gameState should be PM_FreeBall_RightBot
+								//And return 4
+								statespace.gameState = PM_FreeBall_RightBot;
 								Foul_pushball += 1;
-								return 2;
+								return 4;
 							}
 						}
 					}
@@ -2299,7 +2302,8 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 
 			for (int i = 0; i < 5; i++)
 			{
-				if (pEnv->opponent[i].pos.y > pEnv->currentBall.pos.y && pEnv->opponent[i].pos.x <= 8 && pEnv->opponent[i].pos.y <= 70)
+				//According to the previous "if" the pEnv->opponent[i].pos.x should be >=212
+				if (pEnv->opponent[i].pos.y > pEnv->currentBall.pos.y && pEnv->opponent[i].pos.x >= 212 && pEnv->opponent[i].pos.y <= 70)
 				{
 					if (getLength(pEnv->opponent[i].pos, pEnv->currentBall.pos) < 6.69)
 					{
@@ -2552,14 +2556,15 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 		{
 			for (int i = 0; i < 5; i++)
 			{
-				if (pEnv->home[i].pos.y > pEnv->currentBall.pos.y && pEnv->home[i].pos.x >= 212 && pEnv->home[i].pos.y <= 110)
+				//According to the previous "if" pEnv->home[i].pos.y should >=110
+				if (pEnv->home[i].pos.y > pEnv->currentBall.pos.y && pEnv->home[i].pos.x >= 212 && pEnv->home[i].pos.y >= 110)
 				{
 					if (getLength(pEnv->home[i].pos, pEnv->currentBall.pos) < 6.69)
 					{
 						tuiqiu3 = true;
 					}
 				}
-				if (pEnv->home[i].pos.y < pEnv->currentBall.pos.y && pEnv->home[i].pos.x >= 212 && pEnv->home[i].pos.y <= 110)
+				if (pEnv->home[i].pos.y < pEnv->currentBall.pos.y && pEnv->home[i].pos.x >= 212 && pEnv->home[i].pos.y >= 110)
 				{
 					if (getLength(pEnv->home[i].pos, pEnv->currentBall.pos) < 6.69)
 					{
