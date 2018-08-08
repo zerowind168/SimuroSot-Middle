@@ -25,7 +25,7 @@ Date          Version           Modifier				  Content
 #include "stdafx.h"
 #include "Referee.h"
 #include <math.h>
-
+#include <stdio.h>
 
 
 double Deg2Rad(double x)
@@ -1357,6 +1357,9 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_LeftBot;
 								Foul_pushball += 1;
+								char strMsg[100] = {0};
+								sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 2;
 							}
 						}
@@ -1463,6 +1466,9 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_RightBot;
 								Foul_pushball += 1;
+								char strMsg[100] = {0};
+								sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 4;
 							}
 						}
@@ -1575,6 +1581,9 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_LeftTop;
 								Foul_pushball += 1;
+								char strMsg[100] = {0};
+								sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 1;
 							}
 						}
@@ -1682,6 +1691,9 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_RightTop;
 								Foul_pushball += 1;
+								char strMsg[100] = {0};
+								sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 3;
 							}
 						}
@@ -1792,6 +1804,9 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_LeftTop;
 								Foul_pushball += 1;
+								char strMsg[100] = {0};
+								sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 1;
 							}
 						}
@@ -1908,6 +1923,9 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_RightTop;
 								Foul_pushball += 1;
+								char strMsg[100] = {0};
+								sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 3;
 							}
 						}
@@ -2027,6 +2045,9 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_LeftBot;
 								Foul_pushball += 1;
+								char strMsg[100] = {0};
+								sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 2;
 							}
 						}
@@ -2142,6 +2163,9 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_RightBot; // 2018-8-8 changed from PM_FreeBall_LeftBot
 								Foul_pushball += 1;
+								char strMsg[100] = {0};
+								sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 4;  // 2018-8-8 changed from 2
 							}
 						}
@@ -2262,6 +2286,9 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_LeftBot;
 								Foul_pushball += 1;
+								char strMsg[100] = {0};
+								sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 2;
 							}
 						}
@@ -2369,6 +2396,9 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_RightBot;
 								Foul_pushball += 1;
+								char strMsg[100] = {0};
+								sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 4;
 							}
 						}
@@ -2480,6 +2510,9 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_LeftTop;
 								Foul_pushball += 1;
+								char strMsg[100] = {0};
+								sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 1;
 							}
 						}
@@ -2588,6 +2621,9 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_RightTop;
 								Foul_pushball += 1;
+								char strMsg[100] = {0};
+								sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 3;
 							}
 						}
@@ -2713,7 +2749,6 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 	}
 	return 0;
 }
-
 
 int Team::Judge_FREE_KICK(Environment *pEnv)
 {
