@@ -2140,9 +2140,9 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 						{
 							if (Judge_Collision(statespace.home[i], statespace.home[robot]))
 							{
-								statespace.gameState = PM_FreeBall_LeftBot;
+								statespace.gameState = PM_FreeBall_RightBot; // 2018-8-8 changed from PM_FreeBall_LeftBot
 								Foul_pushball += 1;
-								return 2;
+								return 4;  // 2018-8-8 changed from 2
 							}
 						}
 					}
@@ -2299,7 +2299,8 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 
 			for (int i = 0; i < 5; i++)
 			{
-				if (pEnv->opponent[i].pos.y > pEnv->currentBall.pos.y && pEnv->opponent[i].pos.x <= 8 && pEnv->opponent[i].pos.y <= 70)
+				// 2018-8-8 changed from if (pEnv->opponent[i].pos.y > pEnv->currentBall.pos.y && pEnv->opponent[i].pos.x <= 8 && pEnv->opponent[i].pos.y <= 70)
+				if (pEnv->opponent[i].pos.y > pEnv->currentBall.pos.y && pEnv->opponent[i].pos.x >= 212 && pEnv->opponent[i].pos.y <= 70)
 				{
 					if (getLength(pEnv->opponent[i].pos, pEnv->currentBall.pos) < 6.69)
 					{
@@ -2552,14 +2553,16 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 		{
 			for (int i = 0; i < 5; i++)
 			{
-				if (pEnv->home[i].pos.y > pEnv->currentBall.pos.y && pEnv->home[i].pos.x >= 212 && pEnv->home[i].pos.y <= 110)
+				// 2018-8-8 change from if (pEnv->home[i].pos.y > pEnv->currentBall.pos.y && pEnv->home[i].pos.x >= 212 && pEnv->home[i].pos.y <= 110)
+				if (pEnv->home[i].pos.y > pEnv->currentBall.pos.y && pEnv->home[i].pos.x >= 212 && pEnv->home[i].pos.y >= 110)
 				{
 					if (getLength(pEnv->home[i].pos, pEnv->currentBall.pos) < 6.69)
 					{
 						tuiqiu3 = true;
 					}
-				}
-				if (pEnv->home[i].pos.y < pEnv->currentBall.pos.y && pEnv->home[i].pos.x >= 212 && pEnv->home[i].pos.y <= 110)
+				}		
+				// 2018-8-8 change from if (pEnv->home[i].pos.y < pEnv->currentBall.pos.y && pEnv->home[i].pos.x >= 212 && pEnv->home[i].pos.y <= 110)
+				if (pEnv->home[i].pos.y < pEnv->currentBall.pos.y && pEnv->home[i].pos.x >= 212 && pEnv->home[i].pos.y >= 110)
 				{
 					if (getLength(pEnv->home[i].pos, pEnv->currentBall.pos) < 6.69)
 					{
