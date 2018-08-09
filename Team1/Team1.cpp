@@ -85,6 +85,7 @@ extern "C" TEAM1_API void Destroy ( Environment *pEnv )
 extern "C" TEAM1_API void Strategy ( Environment *pEnv )
 {
 	ChangeSystem(pEnv);
+	Environment oEnv = *pEnv;
 	if (team1.Foul_pushball >=4)
 		MessageBox(NULL, "The Blue team has violated the nopushing rule for four times!", "Blue", MB_OK); 
 
@@ -298,9 +299,9 @@ extern "C" TEAM1_API void Strategy ( Environment *pEnv )
 		}
 	}
 
-	pEnv->lastBall = pEnv->currentBall;
+	pEnv->lastBall = oEnv.currentBall;
 
-	WriteLog(pEnv);
+	WriteLog(&oEnv);
 }
 
 
