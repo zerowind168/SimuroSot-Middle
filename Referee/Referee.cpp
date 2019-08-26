@@ -26,6 +26,7 @@ Date          Version           Modifier				  Content
 #include "Referee.h"
 #include <math.h>
 #include <stdio.h>
+#include "Square.h"
 
 
 double Deg2Rad(double x)
@@ -169,7 +170,19 @@ REFEREE_API void CheckPoshoubai(Robot Posxianbai[5], Robot Poshoubai[5], PlayMod
 	case PM_FreeBall_LeftTop:
 		blueRobots = Posxianbai;
 		yellowRobots = Poshoubai;
-		Vector3D safePos[10] = {}
+		Square safePos[10] = 
+		{
+				Square({-80,-10}, 0,0),
+				new Square(new Vector2D(10f, 65f)),
+				new Square(new Vector2D(-50f, -10f)),
+				new Square(new Vector2D(10f, 35f)),
+				new Square(new Vector2D(-20f, -10f)),
+				new Square(new Vector2D(10f, 80f)),
+				new Square(new Vector2D(-65f, -10f)),
+				new Square(new Vector2D(10f, 50f)),
+				new Square(new Vector2D(-35f, -10f)),
+				new Square(new Vector2D(10f, 20f))
+		}
 		for (int i = 0; i < 10; i++)
 		{
 			safePos[i] = new Vector3D()

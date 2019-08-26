@@ -21,7 +21,6 @@ Date          Version           Modifier				  Content
 * Contact:	yanglinquan@126.com
 
 *******************************************************************************/
-
 #ifdef REFEREE_EXPORTS
 #define REFEREE_API __declspec(dllexport)
 #else
