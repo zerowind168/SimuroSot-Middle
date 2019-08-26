@@ -120,9 +120,12 @@ REFEREE_API void CheckPosxianbai(Robot Posxianbai[], PlayMode gameState)
 
 }
 
-REFEREE_API void CheckPoshoubai(Robot Poshoubai[], PlayMode gameState)
+REFEREE_API void CheckPoshoubai(Robot Posxianbai[5], Robot Poshoubai[5], PlayMode gameState)
 {
+	for (int i = 0; i < 5; i++)
+	{
 
+	}
 }
 
 REFEREE_API void CheckPosBall(Vector3D &Posball, PlayMode gameState)

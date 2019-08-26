@@ -206,7 +206,7 @@ REFEREE_API char strBlueName[50];
 REFEREE_API char strYellowName[50];
 
 REFEREE_API void CheckPosxianbai(Robot Posxianbai[], PlayMode gameState);
-REFEREE_API void CheckPoshoubai(Robot Poshoubai[], PlayMode gameState);
+REFEREE_API void CheckPoshoubai(Robot Posxianbai[5], Robot Poshoubai[5], PlayMode gameState);
 REFEREE_API void CheckPosBall(Vector3D &Posball, PlayMode gameState);
 REFEREE_API void BaiQiu(Vector3D &Posball, PlayMode gameState);
 
