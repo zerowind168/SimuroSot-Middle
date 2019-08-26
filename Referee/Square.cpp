@@ -1,4 +1,5 @@
 #include "Square.h"
+#define _USE_MATH_DEFINES
 #include <cmath>
 
 bool LineCross(Vector2D a, Vector2D b, Vector2D c, Vector2D d) noexcept
@@ -30,9 +31,25 @@ std::vector<std::pair<Vector2D, Vector2D>> Square::getLines()
 	};
 }
 
-Square::Square(Vector2D robotPosition, float angleInDegree, float hrl)
+Square::Square(Vector2D robotPosition, float angleInDegree = 0, float hrl = 3.9335)
 {
 	const double robotRadius = hrl * 1.414;
+
+	while (angleInDegree > 45)
+	{
+		angleInDegree -= 90;
+	}
+	while (angleInDegree < -45)
+	{
+		angleInDegree += 90;
+	}
+
+	double point1X = robotPosition.x + robotRadius * std::cos(angleInDegree * M_PI / 180);
+	double point1Y = robotPosition.y + robotRadius * std::sin(angleInDegree * M_PI / 180);
+	double point2X = robotPosition.x - robotRadius * std::cos(angleInDegree * M_PI / 180);
+	double point2Y = robotPosition.y - robotRadius * std::sin(angleInDegree * M_PI / 180);
+	Point1 = Vector2D(point1X, point1Y);
+	Point2 = Vector2D(point2X, point2Y);
 }
 
 bool Square::IsCrossedBy(Square& square)
