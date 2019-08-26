@@ -120,8 +120,62 @@ REFEREE_API void CheckPosxianbai(Robot Posxianbai[], PlayMode gameState)
 
 }
 
+enum ResultType
+{
+	NormalMatch,
+	NextPhase,        //半场结束 上半场下半场加时赛结束、接口使拍数变0
+	GameOver,        //游戏结束，用来判断胜负
+	PlaceKick,
+	GoalKick,
+	PenaltyKick,
+	FreeKickRightTop,
+	FreeKickRightBot,
+	FreeKickLeftTop,
+	FreeKickLeftBot
+};
+
+enum ResultType
+{
+	PlaceKick,
+	GoalKick,
+	PenaltyKick,
+	FreeKickRightTop,
+	FreeKickRightBot,
+	FreeKickLeftTop,
+	FreeKickLeftBot
+};
+
+enum Side
+{
+	Nobody,
+	Yellow,
+	Blue,
+};
+
+struct JudgeResult
+{
+	ResultType ResultType;
+	Side Actor;
+};
+
+Robot *blueRobots, *yellowRobots;
+
+
 REFEREE_API void CheckPoshoubai(Robot Posxianbai[5], Robot Poshoubai[5], PlayMode gameState)
 {
+	JudgeResult judgeResult;
+	switch (gameState)
+	{
+	case PM_FreeBall_LeftTop:
+		blueRobots = Posxianbai;
+		yellowRobots = Poshoubai;
+		Vector3D safePos[10] = {}
+		for (int i = 0; i < 10; i++)
+		{
+			safePos[i] = new Vector3D()
+		}
+	}
+		
 	for (int i = 0; i < 5; i++)
 	{
 
