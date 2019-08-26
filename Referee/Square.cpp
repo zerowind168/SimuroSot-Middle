@@ -48,8 +48,8 @@ Square::Square(Vector2D robotPosition, float angleInDegree = 0, float hrl = 3.93
 	double point1Y = robotPosition.y + robotRadius * std::sin(angleInDegree * M_PI / 180);
 	double point2X = robotPosition.x - robotRadius * std::cos(angleInDegree * M_PI / 180);
 	double point2Y = robotPosition.y - robotRadius * std::sin(angleInDegree * M_PI / 180);
-	Point1 = Vector2D(point1X, point1Y);
-	Point2 = Vector2D(point2X, point2Y);
+	point1 = {point1X, point1Y};
+	point2 = {point2X, point2Y};
 }
 
 bool Square::IsCrossedBy(Square& square)
