@@ -27,7 +27,30 @@ Date          Version           Modifier				  Content
 #include <math.h>
 #include <stdio.h>
 #include "Square.h"
+#include <string>
 
+REFEREE_API Team team1;
+REFEREE_API Team team2;
+REFEREE_API PlayMode gamestate;
+REFEREE_API Robot Posxianbai[5];
+REFEREE_API Robot Copy_Posxianbai[5];
+REFEREE_API Robot Poshoubai[5];
+REFEREE_API Vector3D Posball;
+REFEREE_API Vector3D Copy_Posball;
+
+REFEREE_API char strBlueName[50];
+REFEREE_API char strYellowName[50];
+
+REFEREE_API void CheckPosxianbai(Robot Posxianbai[], PlayMode gameState);
+REFEREE_API void CheckPoshoubai(Robot Poshoubai[], PlayMode gameState);
+REFEREE_API void CheckPoshoubai(Robot Posxianbai[5], Robot Poshoubai[5], PlayMode gameState);
+REFEREE_API void CheckPosBall(Vector3D& Posball, PlayMode gameState);
+REFEREE_API void BaiQiu(Vector3D& Posball, PlayMode gameState);
+
+Vector2D ToVector2D(Vector3D pos)
+{
+	return { pos.x,pos.y };
+}
 
 double Deg2Rad(double x)
 {
@@ -135,17 +158,6 @@ enum ResultType
 	FreeKickLeftBot
 };
 
-enum ResultType
-{
-	PlaceKick,
-	GoalKick,
-	PenaltyKick,
-	FreeKickRightTop,
-	FreeKickRightBot,
-	FreeKickLeftTop,
-	FreeKickLeftBot
-};
-
 enum Side
 {
 	Nobody,
@@ -159,40 +171,118 @@ struct JudgeResult
 	Side Actor;
 };
 
-Robot* blueRobots, * yellowRobots;
+//Robot* blueRobots, * yellowRobots;
 
+REFEREE_API void CheckPoshoubai(Robot Poshoubai[], PlayMode gameState)
+{
+
+}
 
 REFEREE_API void CheckPoshoubai(Robot Posxianbai[5], Robot Poshoubai[5], PlayMode gameState)
 {
-	JudgeResult judgeResult;
+	char buf[512];
+	sprintf(buf, "%lf %lf, %lf %lf,%lf %lf, %lf %lf,%lf %lf", Posxianbai[0].pos.x, Posxianbai[0].pos.y,
+		Posxianbai[1].pos.x, Posxianbai[1].pos.y,
+		Posxianbai[2].pos.x, Posxianbai[2].pos.y,
+		Posxianbai[3].pos.x, Posxianbai[3].pos.y,
+		Posxianbai[4].pos.x, Posxianbai[4].pos.y);
+	MessageBox(NULL, buf, "test", MB_OK);
+	int Special = 0;
+	Square safePos[10];
 	switch (gameState)
 	{
-	case PM_FreeBall_LeftTop:
-		blueRobots = Posxianbai;
-		yellowRobots = Poshoubai;
-		Square safePos[10] =
+		case PM_FreeBall_LeftTop:
+		case PM_FreeBall_LeftBot:
+		case PM_PenaltyKick_Yellow:
+		case PM_GoalKick_Yellow:
+		case PM_PlaceKick_Blue:
+		case PM_PlaceKick_Yellow:
 		{
-			Square({7,12}),
-			Square({20,12}),
-			Square({33,12}),
-			Square({45,12}),
-			Square({55,12}),
-			Square({65,12}),
-			Square({75,12}),
-			Square({85,12}),
-			Square({75,65}),
-			Square({85,65})
+			safePos[0] = Square({ 28,8 });
+			safePos[1] = Square({ 28,13 });
+			safePos[2] = Square({ 28,18 });
+			safePos[3] = Square({ 28,23 });
+			safePos[4] = Square({ 28,28 });
+			safePos[5] = Square({ 28,33 });
+			safePos[6] = Square({ 28,38 });
+			safePos[7] = Square({ 28,43 });
+			safePos[8] = Square({ 28,48 });
+			safePos[9] = Square({ 28,53 });
+			Special = 1;
+			break;
+		}
+		case PM_FreeBall_RightBot:
+		case PM_FreeBall_RightTop:
+		case PM_PenaltyKick_Blue:
+		case PM_GoalKick_Blue:
+		{
+			safePos[0] = Square({ 71,8 });
+			safePos[1] = Square({ 71,13 });
+			safePos[2] = Square({ 71,18 });
+			safePos[3] = Square({ 71,23 });
+			safePos[4] = Square({ 71,28 });
+			safePos[5] = Square({ 71,33 });
+			safePos[6] = Square({ 71,38 });
+			safePos[7] = Square({ 71,43 });
+			safePos[8] = Square({ 71,48 });
+			safePos[9] = Square({ 71,53 });
+			Special = 1;
+			break;
+		}
+		default:
+		{
+			break;
+		}
+	}
+	if (Special == 1)
+	{
+		Square houbaiSquare[5] =
+		{
+			Square(ToVector2D(Poshoubai[0].pos),Poshoubai[0].rotation),
+			Square(ToVector2D(Poshoubai[1].pos),Poshoubai[1].rotation),
+			Square(ToVector2D(Poshoubai[2].pos),Poshoubai[2].rotation),
+			Square(ToVector2D(Poshoubai[3].pos),Poshoubai[3].rotation),
+			Square(ToVector2D(Poshoubai[4].pos),Poshoubai[4].rotation),
 		};
+		Square xianbaiSquare[5] =
+		{
+			Square(ToVector2D(Posxianbai[0].pos),Posxianbai[0].rotation),
+			Square(ToVector2D(Posxianbai[1].pos),Posxianbai[2].rotation),
+			Square(ToVector2D(Posxianbai[2].pos),Posxianbai[3].rotation),
+			Square(ToVector2D(Posxianbai[3].pos),Posxianbai[4].rotation),
+			Square(ToVector2D(Posxianbai[4].pos),Posxianbai[5].rotation),
+		};
+		int t = 0;
+		//判断后摆的球员是否与前摆的球员重合
 		for (int i = 0; i < 5; i++)
 		{
-			blueRobots[i].pos = safePos[i]
+			for (int j = 0; j < 5; j++)
+			{
+				if (houbaiSquare[i].IsCrossedBy(xianbaiSquare[j]))
+				{
+					////判断安全区域是否被占用
+					//for (int ii = 0; ii < 5; ii++)
+					//{
+					//	if (houbaiSquare[ii].IsCrossedBy(safePos[t])
+					//		|| xianbaiSquare[ii].IsCrossedBy(safePos[t]))
+					//	{
+					//		t++;
+					//		ii = 0;
+					//	}
+					//}
+					Poshoubai[i].pos = safePos[t].getPos();
+					Poshoubai[i].pos.x = (Poshoubai[i].pos.x - 6.818) * 2.54;
+					Poshoubai[i].pos.y = (Poshoubai[i].pos.y - 6.3730) * 2.54;
+					t++;
+					char buff[512];
+					sprintf(buff, "%d号后摆机器人重叠", i);
+					MessageBox(NULL, buff, "test", MB_OK);
+					break;
+				}
+			}
 		}
 	}
 
-	for (int i = 0; i < 5; i++)
-	{
-
-	}
 }
 
 REFEREE_API void CheckPosBall(Vector3D& Posball, PlayMode gameState)

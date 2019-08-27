@@ -56,6 +56,7 @@ STRATEGY_API char strBlueName[50];
 STRATEGY_API char strYellowName[50];
 
 STRATEGY_API void CheckPosxianbai(Robot Posxianbai[], PlayMode gameState);
+STRATEGY_API void CheckPoshoubai(Robot Poshoubai[], PlayMode gameState);
 STRATEGY_API void CheckPoshoubai(Robot Posxianbai[5], Robot Poshoubai[5], PlayMode gameState);
 STRATEGY_API void CheckPosBall(Vector3D &Posball, PlayMode gameState);
 STRATEGY_API void BaiQiu(Vector3D &Posball, PlayMode gameState);
@@ -120,7 +121,7 @@ extern "C" TEAM2_API void Strategy ( Environment *pEnv )
 		{
 			gamestate = team2.statespace.gameState;
 			SetLaterRobots(gamestate, Copy_Posxianbai, Copy_Posball, Poshoubai);
-			CheckPoshoubai(Copy_Posxianbai, Poshoubai, team2.statespace.gameState);
+			CheckPoshoubai(Posxianbai, Poshoubai, team2.statespace.gameState);
 			team2.statespace.bNew = false;
 			team2.statespace.nNewCount = 0;
 			team2.houbai = false;
