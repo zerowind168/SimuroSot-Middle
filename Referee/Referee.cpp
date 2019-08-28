@@ -180,6 +180,7 @@ REFEREE_API void CheckPoshoubai(Robot Poshoubai[], PlayMode gameState)
 
 REFEREE_API void CheckPoshoubai(Robot Posxianbai[5], Robot Poshoubai[5], PlayMode gameState)
 {
+#ifdef _DEBUG
 	char buf[512];
 	sprintf(buf, "%lf %lf, %lf %lf,%lf %lf, %lf %lf,%lf %lf", Posxianbai[0].pos.x, Posxianbai[0].pos.y,
 		Posxianbai[1].pos.x, Posxianbai[1].pos.y,
@@ -187,6 +188,8 @@ REFEREE_API void CheckPoshoubai(Robot Posxianbai[5], Robot Poshoubai[5], PlayMod
 		Posxianbai[3].pos.x, Posxianbai[3].pos.y,
 		Posxianbai[4].pos.x, Posxianbai[4].pos.y);
 	MessageBox(NULL, buf, "test", MB_OK);
+#endif // DEBUG
+
 	int Special = 0;
 	Square safePos[10];
 	switch (gameState)
@@ -274,10 +277,13 @@ REFEREE_API void CheckPoshoubai(Robot Posxianbai[5], Robot Poshoubai[5], PlayMod
 					Poshoubai[i].pos.x = (Poshoubai[i].pos.x - 6.818) * 2.54;
 					Poshoubai[i].pos.y = (Poshoubai[i].pos.y - 6.3730) * 2.54;
 					t++;
+#ifdef _DEBUG
 					char buff[512];
 					sprintf(buff, "%d号后摆机器人重叠", i);
 					MessageBox(NULL, buff, "test", MB_OK);
 					break;
+#endif // _DEBUG
+
 				}
 			}
 		}

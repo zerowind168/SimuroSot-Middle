@@ -6,22 +6,22 @@ struct Vector2D
 {
 	double x, y;
 
-	Vector2D operator-(const Vector2D& rhs) const noexcept
+	Vector2D operator-(const Vector2D& rhs) const
 	{
 		return Vector2D{ x - rhs.x, y - rhs.y };
 	}
 
-	Vector2D operator-() const noexcept
+	Vector2D operator-() const
 	{
 		return Vector2D{ -x, -y };
 	}
 
-	double operator*(const Vector2D& rhs) const noexcept
+	double operator*(const Vector2D& rhs) const
 	{
 		return x * rhs.x + y * rhs.y;
 	}
 
-	double Cross(const Vector2D& rhs) const noexcept
+	double Cross(const Vector2D& rhs) const
 	{
 		return x * rhs.y - y * rhs.x;
 	}

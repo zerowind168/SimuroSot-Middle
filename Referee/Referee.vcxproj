@@ -83,6 +83,12 @@
     <ProjectReference>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
+    <PostBuildEvent>
+      <Command>copy $(OutputPath)$(AssemblyName).lib ..\Team1\ &amp; copy $(OutputPath)$(AssemblyName).lib ..\Team2\</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copy target to Team1 and Team2</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />

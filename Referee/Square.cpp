@@ -3,7 +3,7 @@
 #include "Square.h"
 #include "Referee.h"
 
-bool LineCross(Vector2D a, Vector2D b, Vector2D c, Vector2D d) noexcept
+bool LineCross(Vector2D a, Vector2D b, Vector2D c, Vector2D d)
 {
 	const auto ac = c - a;
 	const auto ad = d - a;
@@ -32,7 +32,7 @@ std::vector<std::pair<Vector2D, Vector2D>> Square::getLines()
 	};
 }
 
-Square::Square() noexcept
+Square::Square()
 {
 
 }
@@ -86,7 +86,7 @@ bool Square::IsCrossedBy(Square& square)
 	return false;
 }
 
-Vector3D Square::getPos() noexcept
+Vector3D Square::getPos()
 {
 	return Vector3D{robotPosition.x,robotPosition.y,0 };
 }
