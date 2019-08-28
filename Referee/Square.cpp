@@ -1,6 +1,6 @@
-#include "Square.h"
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include "Square.h"
 #include "Referee.h"
 
 bool LineCross(Vector2D a, Vector2D b, Vector2D c, Vector2D d) noexcept
@@ -32,32 +32,7 @@ std::vector<std::pair<Vector2D, Vector2D>> Square::getLines()
 	};
 }
 
-//Square::Square(Vector3D robotPosition, float angleInDegree, float hrl)
-//{
-//	Vector2D Pos = { robotPosition.x,robotPosition.y };
-//	this->robotPosition = Pos;
-//
-//	const double robotRadius = hrl * 1.414;
-//
-//	while (angleInDegree > 45)
-//	{
-//		angleInDegree -= 90;
-//	}
-//	while (angleInDegree < -45)
-//	{
-//		angleInDegree += 90;
-//	}
-//#define M_PI 3.141592654
-//
-//	double point1X = robotPosition.x + robotRadius * std::cos(angleInDegree * M_PI / 180);
-//	double point1Y = robotPosition.y + robotRadius * std::sin(angleInDegree * M_PI / 180);
-//	double point2X = robotPosition.x - robotRadius * std::cos(angleInDegree * M_PI / 180);
-//	double point2Y = robotPosition.y - robotRadius * std::sin(angleInDegree * M_PI / 180);
-//	point1 = { point1X, point1Y };
-//	point2 = { point2X, point2Y };
-//}
-
-Square::Square()
+Square::Square() noexcept
 {
 
 }
@@ -76,21 +51,19 @@ Square::Square(Vector2D robotPosition, float angleInDegree, float hrl)
 	{
 		angleInDegree += 90;
 	}
-#define M_PI 3.141592654
 
-	double point1X = robotPosition.x + robotRadius * std::cos(angleInDegree * M_PI / 180);
-	double point1Y = robotPosition.y + robotRadius * std::sin(angleInDegree * M_PI / 180);
-	double point2X = robotPosition.x - robotRadius * std::cos(angleInDegree * M_PI / 180);
-	double point2Y = robotPosition.y - robotRadius * std::sin(angleInDegree * M_PI / 180);
-	double point3X = robotPosition.x - robotRadius * std::sin(angleInDegree * M_PI / 180);
-	double point3Y = robotPosition.y + robotRadius * std::cos(angleInDegree * M_PI / 180);
-	double point4X = robotPosition.x + robotRadius * std::sin(angleInDegree * M_PI / 180);
-	double point4Y = robotPosition.y - robotRadius * std::cos(angleInDegree * M_PI / 180);
+	const double point1X = robotPosition.x + robotRadius * std::cos(angleInDegree * M_PI / 180);
+	const double point1Y = robotPosition.y + robotRadius * std::sin(angleInDegree * M_PI / 180);
+	const double point2X = robotPosition.x - robotRadius * std::cos(angleInDegree * M_PI / 180);
+	const double point2Y = robotPosition.y - robotRadius * std::sin(angleInDegree * M_PI / 180);
+	const double point3X = robotPosition.x - robotRadius * std::sin(angleInDegree * M_PI / 180);
+	const double point3Y = robotPosition.y + robotRadius * std::cos(angleInDegree * M_PI / 180);
+	const double point4X = robotPosition.x + robotRadius * std::sin(angleInDegree * M_PI / 180);
+	const double point4Y = robotPosition.y - robotRadius * std::cos(angleInDegree * M_PI / 180);
 	point1 = Vector2D(point1X, point1Y);
 	point2 = Vector2D(point2X, point2Y);
 	point3 = Vector2D(point3X, point3Y);
 	point4 = Vector2D(point4X, point4Y);
-
 }
 
 bool Square::IsCrossedBy(Square& square)
@@ -113,7 +86,7 @@ bool Square::IsCrossedBy(Square& square)
 	return false;
 }
 
-Vector3D Square::getPos()
+Vector3D Square::getPos() noexcept
 {
 	return Vector3D{robotPosition.x,robotPosition.y,0 };
 }
