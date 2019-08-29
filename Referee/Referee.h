@@ -21,7 +21,7 @@ Date          Version           Modifier				  Content
 * Contact:	yanglinquan@126.com
 
 *******************************************************************************/
-
+#pragma once
 #ifdef REFEREE_EXPORTS
 #define REFEREE_API __declspec(dllexport)
 #else
@@ -36,6 +36,8 @@ typedef struct
 {
 	double x, y, z;
 } Vector3D;
+
+
 
 typedef struct
 {
@@ -192,22 +194,3 @@ private:
 	int op_recordrobot4;   
 	int op_recordzong4;    
 };
-
-REFEREE_API Team team1;
-REFEREE_API Team team2;
-REFEREE_API PlayMode gamestate;			 
-REFEREE_API Robot Posxianbai[5];         
-REFEREE_API Robot Copy_Posxianbai[5];    
-REFEREE_API Robot Poshoubai[5];          
-REFEREE_API Vector3D Posball;            
-REFEREE_API Vector3D Copy_Posball;       
-										 
-REFEREE_API char strBlueName[50];
-REFEREE_API char strYellowName[50];
-
-REFEREE_API void CheckPosxianbai(Robot Posxianbai[], PlayMode gameState);
-REFEREE_API void CheckPoshoubai(Robot Poshoubai[], PlayMode gameState);
-REFEREE_API void CheckPosBall(Vector3D &Posball, PlayMode gameState);
-REFEREE_API void BaiQiu(Vector3D &Posball, PlayMode gameState);
-
-

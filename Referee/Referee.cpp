@@ -10,14 +10,14 @@ Version          : 0.1
 --------------------------------------------------------------------------------
 Remarks           : -
 --------------------------------------------------------------------------------
-Modifications : 
+Modifications :
 Date          Version           Modifier				  Content
 2018/03/06      0.1             Le Li, Dr.YANG             Create
 2018/05/31      0.1             Le Li, Dr.YANG             Modify
 </PRE>
-******************************************************************************** 
+********************************************************************************
 
-* Copyright(c) 2018-, Linquan Yang, All rights reserved. 
+* Copyright(c) 2018-, Linquan Yang, All rights reserved.
 * Contact:	yanglinquan@126.com
 * China University of Geosciences.
 *******************************************************************************/
@@ -26,7 +26,31 @@ Date          Version           Modifier				  Content
 #include "Referee.h"
 #include <math.h>
 #include <stdio.h>
+#include "Square.h"
+#include <string>
 
+REFEREE_API Team team1;
+REFEREE_API Team team2;
+REFEREE_API PlayMode gamestate;
+REFEREE_API Robot Posxianbai[5];
+REFEREE_API Robot Copy_Posxianbai[5];
+REFEREE_API Robot Poshoubai[5];
+REFEREE_API Vector3D Posball;
+REFEREE_API Vector3D Copy_Posball;
+
+REFEREE_API char strBlueName[50];
+REFEREE_API char strYellowName[50];
+
+REFEREE_API void CheckPosxianbai(Robot Posxianbai[], PlayMode gameState);
+REFEREE_API void CheckPoshoubai(Robot Poshoubai[], PlayMode gameState);
+REFEREE_API void CheckPoshoubai(Robot Posxianbai[5], Robot Poshoubai[5], PlayMode gameState);
+REFEREE_API void CheckPosBall(Vector3D& Posball, PlayMode gameState);
+REFEREE_API void BaiQiu(Vector3D& Posball, PlayMode gameState);
+
+Vector2D ToVector2D(Vector3D pos)
+{
+	return { pos.x,pos.y };
+}
 
 double Deg2Rad(double x)
 {
@@ -60,11 +84,11 @@ void GetVertex(Robot r, Vector3D vertex[])
 	vertex[3].y = y - 5.7 * sinDeg(rotation + 45);
 }
 
-double getLength(Vector3D a, Vector3D b)   
+double getLength(Vector3D a, Vector3D b)
 {
 	double disx = a.x - b.x;
 	double disy = a.y - b.y;
-	double num = (disx * disx) + (disy * disy);   
+	double num = (disx * disx) + (disy * disy);
 	return sqrt(num);
 }
 
@@ -120,12 +144,154 @@ REFEREE_API void CheckPosxianbai(Robot Posxianbai[], PlayMode gameState)
 
 }
 
+enum ResultType
+{
+	NormalMatch,
+	NextPhase,        //半场结束 上半场下半场加时赛结束、接口使拍数变0
+	GameOver,        //游戏结束，用来判断胜负
+	PlaceKick,
+	GoalKick,
+	PenaltyKick,
+	FreeKickRightTop,
+	FreeKickRightBot,
+	FreeKickLeftTop,
+	FreeKickLeftBot
+};
+
+enum Side
+{
+	Nobody,
+	Yellow,
+	Blue,
+};
+
+struct JudgeResult
+{
+	ResultType ResultType;
+	Side Actor;
+};
+
+//Robot* blueRobots, * yellowRobots;
+
 REFEREE_API void CheckPoshoubai(Robot Poshoubai[], PlayMode gameState)
 {
 
 }
 
-REFEREE_API void CheckPosBall(Vector3D &Posball, PlayMode gameState)
+REFEREE_API void CheckPoshoubai(Robot Posxianbai[5], Robot Poshoubai[5], PlayMode gameState)
+{
+#ifdef _DEBUG
+	char buf[512];
+	sprintf(buf, "%lf %lf, %lf %lf,%lf %lf, %lf %lf,%lf %lf", Posxianbai[0].pos.x, Posxianbai[0].pos.y,
+		Posxianbai[1].pos.x, Posxianbai[1].pos.y,
+		Posxianbai[2].pos.x, Posxianbai[2].pos.y,
+		Posxianbai[3].pos.x, Posxianbai[3].pos.y,
+		Posxianbai[4].pos.x, Posxianbai[4].pos.y);
+	MessageBox(NULL, buf, "test", MB_OK);
+#endif // DEBUG
+
+	int Special = 0;
+	Square safePos[10];
+	switch (gameState)
+	{
+		case PM_FreeBall_LeftTop:
+		case PM_FreeBall_LeftBot:
+		case PM_PenaltyKick_Yellow:
+		case PM_GoalKick_Yellow:
+		case PM_PlaceKick_Blue:
+		case PM_PlaceKick_Yellow:
+		{
+			safePos[0] = Square({ 28,8 });
+			safePos[1] = Square({ 28,13 });
+			safePos[2] = Square({ 28,18 });
+			safePos[3] = Square({ 28,23 });
+			safePos[4] = Square({ 28,28 });
+			safePos[5] = Square({ 28,33 });
+			safePos[6] = Square({ 28,38 });
+			safePos[7] = Square({ 28,43 });
+			safePos[8] = Square({ 28,48 });
+			safePos[9] = Square({ 28,53 });
+			Special = 1;
+			break;
+		}
+		case PM_FreeBall_RightBot:
+		case PM_FreeBall_RightTop:
+		case PM_PenaltyKick_Blue:
+		case PM_GoalKick_Blue:
+		{
+			safePos[0] = Square({ 71,8 });
+			safePos[1] = Square({ 71,13 });
+			safePos[2] = Square({ 71,18 });
+			safePos[3] = Square({ 71,23 });
+			safePos[4] = Square({ 71,28 });
+			safePos[5] = Square({ 71,33 });
+			safePos[6] = Square({ 71,38 });
+			safePos[7] = Square({ 71,43 });
+			safePos[8] = Square({ 71,48 });
+			safePos[9] = Square({ 71,53 });
+			Special = 1;
+			break;
+		}
+		default:
+		{
+			break;
+		}
+	}
+	if (Special == 1)
+	{
+		Square houbaiSquare[5] =
+		{
+			Square(ToVector2D(Poshoubai[0].pos),Poshoubai[0].rotation),
+			Square(ToVector2D(Poshoubai[1].pos),Poshoubai[1].rotation),
+			Square(ToVector2D(Poshoubai[2].pos),Poshoubai[2].rotation),
+			Square(ToVector2D(Poshoubai[3].pos),Poshoubai[3].rotation),
+			Square(ToVector2D(Poshoubai[4].pos),Poshoubai[4].rotation),
+		};
+		Square xianbaiSquare[5] =
+		{
+			Square(ToVector2D(Posxianbai[0].pos),Posxianbai[0].rotation),
+			Square(ToVector2D(Posxianbai[1].pos),Posxianbai[2].rotation),
+			Square(ToVector2D(Posxianbai[2].pos),Posxianbai[3].rotation),
+			Square(ToVector2D(Posxianbai[3].pos),Posxianbai[4].rotation),
+			Square(ToVector2D(Posxianbai[4].pos),Posxianbai[5].rotation),
+		};
+		int t = 0;
+		//判断后摆的球员是否与前摆的球员重合
+		for (int i = 0; i < 5; i++)
+		{
+			for (int j = 0; j < 5; j++)
+			{
+				if (houbaiSquare[i].IsCrossedBy(xianbaiSquare[j]))
+				{
+					////判断安全区域是否被占用
+					//for (int ii = 0; ii < 5; ii++)
+					//{
+					//	if (houbaiSquare[ii].IsCrossedBy(safePos[t])
+					//		|| xianbaiSquare[ii].IsCrossedBy(safePos[t]))
+					//	{
+					//		t++;
+					//		ii = 0;
+					//	}
+					//}
+					Poshoubai[i].pos = safePos[t].getPos();
+					Poshoubai[i].pos.x = (Poshoubai[i].pos.x - 6.818) * 2.54;
+					Poshoubai[i].pos.y = (Poshoubai[i].pos.y - 6.3730) * 2.54;
+					t++;
+#ifdef _DEBUG
+					char buff[512];
+					sprintf(buff, "%d号后摆机器人重叠", i);
+					MessageBox(NULL, buff, "test", MB_OK);
+					break;
+#endif // _DEBUG
+
+				}
+			}
+		}
+	}
+
+}
+
+REFEREE_API void CheckPosBall(Vector3D& Posball, PlayMode gameState)
 {
 	if (gameState == 11)
 	{
@@ -145,9 +311,9 @@ REFEREE_API void CheckPosBall(Vector3D &Posball, PlayMode gameState)
 	}
 }
 
-REFEREE_API void BaiQiu(Vector3D &Posball, PlayMode gameState)
-{   
-	switch (gameState){
+REFEREE_API void BaiQiu(Vector3D& Posball, PlayMode gameState)
+{
+	switch (gameState) {
 	case PM_FreeBall_LeftTop:
 		Posball.x = 55;
 		Posball.y = 150;
@@ -304,23 +470,23 @@ bool Team::Set_FREE_BALL(int FREE_BALL)
 	}
 }
 
-void Team::Judge_duiwu(Environment *pEnv)
+void Team::Judge_duiwu(Environment* pEnv)
 {
-	if (pEnv->home[0].pos.x >= -15 && pEnv->home[0].pos.x <= 80)  
+	if (pEnv->home[0].pos.x >= -15 && pEnv->home[0].pos.x <= 80)
 		duiwu = YELLOW_TEAM;
 	else
 		duiwu = BLUE_TEAM;
 }
 
-int Team::Judge_PENALTY_KICK(Environment *pEnv)
+int Team::Judge_PENALTY_KICK(Environment* pEnv)
 {
-	int num1 = 0;    
-	int num2 = 0;    
-	int zong = 0;    
+	int num1 = 0;
+	int num2 = 0;
+	int zong = 0;
 	int nCycles = 10;
 	if (pEnv->currentBall.pos.x >= 0 && pEnv->currentBall.pos.x <= 80 && pEnv->currentBall.pos.y >= 30 && pEnv->currentBall.pos.y <= 150)
 	{
-		if (duiwu == 2)     
+		if (duiwu == 2)
 		{
 			for (int i = 1; i < 5; i++)
 			{
@@ -502,7 +668,7 @@ int Team::Judge_PENALTY_KICK(Environment *pEnv)
 	}
 	else if (pEnv->currentBall.pos.x >= 140 && pEnv->currentBall.pos.x <= 220 && pEnv->currentBall.pos.y >= 30 && pEnv->currentBall.pos.y <= 150)
 	{
-		if (duiwu == 1)     
+		if (duiwu == 1)
 		{
 			for (int i = 1; i < 5; i++)
 			{
@@ -696,7 +862,7 @@ int Team::Judge_PENALTY_KICK(Environment *pEnv)
 	}
 }
 
-int Team::Judge_GOAL_KICK1(Environment *pEnv)                              
+int Team::Judge_GOAL_KICK1(Environment* pEnv)
 {
 	if (pEnv->currentBall.pos.x >= 140 && pEnv->currentBall.pos.x <= 220 && pEnv->currentBall.pos.y >= 30 && pEnv->currentBall.pos.y <= 150)
 	{
@@ -785,12 +951,12 @@ int Team::Judge_GOAL_KICK1(Environment *pEnv)
 }
 
 
-int Team::Judge_GOAL_KICK2(Environment *pEnv)
+int Team::Judge_GOAL_KICK2(Environment* pEnv)
 {
-	int num3 = 0;     
-	int num4 = 0;    
-	int zong4 = 0;    
-	int robot3 = 0;   
+	int num3 = 0;
+	int num4 = 0;
+	int zong4 = 0;
+	int robot3 = 0;
 	int nCycles = 10;
 
 	if (pEnv->currentBall.pos.x >= 140 && pEnv->currentBall.pos.x <= 220 && pEnv->currentBall.pos.y >= 30 && pEnv->currentBall.pos.y <= 150)
@@ -1282,7 +1448,7 @@ int Team::Judge_GOAL_KICK2(Environment *pEnv)
 	}
 }
 
-int Team::Judge_PLACE_KICK(Environment *pEnv)
+int Team::Judge_PLACE_KICK(Environment* pEnv)
 {
 	statespace.currentBall = pEnv->currentBall;
 	for (int i = 0; i < 5; i++)
@@ -1309,13 +1475,13 @@ int Team::Judge_PLACE_KICK(Environment *pEnv)
 	}
 }
 
-int Team::Judge_FREE_BALL(Environment *pEnv)
+int Team::Judge_FREE_BALL(Environment* pEnv)
 {
 	int robot;
-	bool tuiqiu1 = false;         
-	bool tuiqiu2 = false;         
-	bool tuiqiu3 = false;         
-	bool facetoface = false;      
+	bool tuiqiu1 = false;
+	bool tuiqiu2 = false;
+	bool tuiqiu3 = false;
+	bool facetoface = false;
 	int nSlowCycles = 100;
 	int nFaceCycles = 50;
 	if (pEnv->currentBall.pos.x <= 8 && pEnv->currentBall.pos.y <= 70)
@@ -1357,7 +1523,7 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_LeftBot;
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
+								char strMsg[100] = { 0 };
 								sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
 								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 2;
@@ -1466,7 +1632,7 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_RightBot;
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
+								char strMsg[100] = { 0 };
 								sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
 								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 4;
@@ -1581,7 +1747,7 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_LeftTop;
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
+								char strMsg[100] = { 0 };
 								sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
 								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 1;
@@ -1691,7 +1857,7 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_RightTop;
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
+								char strMsg[100] = { 0 };
 								sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
 								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 3;
@@ -1804,7 +1970,7 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_LeftTop;
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
+								char strMsg[100] = { 0 };
 								sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
 								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 1;
@@ -1854,7 +2020,7 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 
 			for (int i = 0; i < 5; i++)
 			{
-				if (pEnv->opponent[i].pos.x > pEnv->currentBall.pos.x  && pEnv->opponent[i].pos.y >= 172)
+				if (pEnv->opponent[i].pos.x > pEnv->currentBall.pos.x && pEnv->opponent[i].pos.y >= 172)
 				{
 					if (getLength(pEnv->opponent[i].pos, pEnv->currentBall.pos) < 6.69)
 					{
@@ -1890,14 +2056,14 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 		{
 			for (int i = 0; i < 5; i++)
 			{
-				if (pEnv->home[i].pos.x < pEnv->currentBall.pos.x &&  pEnv->home[i].pos.y >= 172)
+				if (pEnv->home[i].pos.x < pEnv->currentBall.pos.x && pEnv->home[i].pos.y >= 172)
 				{
 					if (getLength(pEnv->home[i].pos, pEnv->currentBall.pos) < 6.69)
 					{
 						tuiqiu3 = true;
 					}
 				}
-				if (pEnv->home[i].pos.x > pEnv->currentBall.pos.x &&  pEnv->home[i].pos.y >= 172)
+				if (pEnv->home[i].pos.x > pEnv->currentBall.pos.x && pEnv->home[i].pos.y >= 172)
 				{
 					if (getLength(pEnv->home[i].pos, pEnv->currentBall.pos) < 6.69)
 					{
@@ -1923,7 +2089,7 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_RightTop;
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
+								char strMsg[100] = { 0 };
 								sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
 								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 3;
@@ -1972,7 +2138,7 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 
 			for (int i = 0; i < 5; i++)
 			{
-				if (pEnv->opponent[i].pos.x < pEnv->currentBall.pos.x  && pEnv->opponent[i].pos.y >= 172)
+				if (pEnv->opponent[i].pos.x < pEnv->currentBall.pos.x && pEnv->opponent[i].pos.y >= 172)
 				{
 					if (getLength(pEnv->opponent[i].pos, pEnv->currentBall.pos) < 6.69)
 					{
@@ -2045,7 +2211,7 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_LeftBot;
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
+								char strMsg[100] = { 0 };
 								sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
 								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 2;
@@ -2094,7 +2260,7 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 
 			for (int i = 0; i < 5; i++)
 			{
-				if (pEnv->opponent[i].pos.x > pEnv->currentBall.pos.x  && pEnv->opponent[i].pos.y <= 8)
+				if (pEnv->opponent[i].pos.x > pEnv->currentBall.pos.x && pEnv->opponent[i].pos.y <= 8)
 				{
 					if (getLength(pEnv->opponent[i].pos, pEnv->currentBall.pos) < 6.69)
 					{
@@ -2130,14 +2296,14 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 		{
 			for (int i = 0; i < 5; i++)
 			{
-				if (pEnv->home[i].pos.x < pEnv->currentBall.pos.x &&  pEnv->home[i].pos.y <= 8)
+				if (pEnv->home[i].pos.x < pEnv->currentBall.pos.x && pEnv->home[i].pos.y <= 8)
 				{
 					if (getLength(pEnv->home[i].pos, pEnv->currentBall.pos) < 6.69)
 					{
 						tuiqiu3 = true;
 					}
 				}
-				if (pEnv->home[i].pos.x > pEnv->currentBall.pos.x &&  pEnv->home[i].pos.y <= 8)
+				if (pEnv->home[i].pos.x > pEnv->currentBall.pos.x && pEnv->home[i].pos.y <= 8)
 				{
 					if (getLength(pEnv->home[i].pos, pEnv->currentBall.pos) < 6.69)
 					{
@@ -2163,7 +2329,7 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_RightBot; // 2018-8-8 changed from PM_FreeBall_LeftBot
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
+								char strMsg[100] = { 0 };
 								sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
 								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 4;  // 2018-8-8 changed from 2
@@ -2213,7 +2379,7 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 
 			for (int i = 0; i < 5; i++)
 			{
-				if (pEnv->opponent[i].pos.x < pEnv->currentBall.pos.x  && pEnv->opponent[i].pos.y <= 8)
+				if (pEnv->opponent[i].pos.x < pEnv->currentBall.pos.x && pEnv->opponent[i].pos.y <= 8)
 				{
 					if (getLength(pEnv->opponent[i].pos, pEnv->currentBall.pos) < 6.69)
 					{
@@ -2286,7 +2452,7 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_LeftBot;
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
+								char strMsg[100] = { 0 };
 								sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
 								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 2;
@@ -2396,7 +2562,7 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_RightBot;
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
+								char strMsg[100] = { 0 };
 								sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
 								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 4;
@@ -2510,7 +2676,7 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_LeftTop;
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
+								char strMsg[100] = { 0 };
 								sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
 								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 1;
@@ -2593,7 +2759,7 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 					{
 						tuiqiu3 = true;
 					}
-				}		
+				}
 				// 2018-8-8 change from if (pEnv->home[i].pos.y < pEnv->currentBall.pos.y && pEnv->home[i].pos.x >= 212 && pEnv->home[i].pos.y <= 110)
 				if (pEnv->home[i].pos.y < pEnv->currentBall.pos.y && pEnv->home[i].pos.x >= 212 && pEnv->home[i].pos.y >= 110)
 				{
@@ -2621,7 +2787,7 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_RightTop;
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
+								char strMsg[100] = { 0 };
 								sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
 								MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 3;
@@ -2750,7 +2916,7 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 	return 0;
 }
 
-int Team::Judge_FREE_KICK(Environment *pEnv)
+int Team::Judge_FREE_KICK(Environment* pEnv)
 {
 	return 0;
 }
