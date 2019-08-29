@@ -60,6 +60,10 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>copy $(OutputPath)$(AssemblyName).lib ..\Team1\ &amp; copy $(OutputPath)$(AssemblyName).lib ..\Team2\</Command>
+      <Message>Copy target to Team1 and Team2</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>

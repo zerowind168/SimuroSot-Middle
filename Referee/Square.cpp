@@ -43,6 +43,11 @@ Square::Square(Vector2D robotPosition, float angleInDegree, float hrl)
 
 	const double robotRadius = hrl * 1.414;
 
+	if (isinf(angleInDegree))
+	{
+		angleInDegree = 0;
+	}
+
 	while (angleInDegree > 45)
 	{
 		angleInDegree -= 90;
