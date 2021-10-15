@@ -26,6 +26,11 @@ Date          Version           Modifier				  Content
 #include "Referee.h"
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <vector>
+
+using namespace std;
 
 
 double Deg2Rad(double x)
@@ -41,6 +46,13 @@ double sinDeg(double x)
 double cosDeg(double x)
 {
 	return (cos(Deg2Rad(x)));
+}
+
+double getLength(Vector3D a, Vector3D b)   
+{
+	double dx = a.x - b.x;
+	double dy = a.y - b.y;
+	return sqrt((dx * dx) + (dy * dy));   	
 }
 
 void GetVertex(Robot r, Vector3D vertex[])
@@ -60,69 +72,652 @@ void GetVertex(Robot r, Vector3D vertex[])
 	vertex[3].y = y - 5.7 * sinDeg(rotation + 45);
 }
 
-double getLength(Vector3D a, Vector3D b)   
-{
-	double disx = a.x - b.x;
-	double disy = a.y - b.y;
-	double num = (disx * disx) + (disy * disy);   
-	return sqrt(num);
-}
 
 bool Judge_Collision(Robot x, Robot y)
 {
+	double d = getLength(x.pos, y.pos);
+	if (d > 12.0)
+	{
+		return false;
+	}
+	else if (d < 8.0)
+	{
+		return true;
+	}
+
 	RefRobot a, b;
 	a.pos = x.pos;
 	b.pos = y.pos;
 	a.rotation = x.rotation;
 	b.rotation = y.rotation;
 	GetVertex(x, a.vertex);
-	GetVertex(y, b.vertex);
+	GetVertex(y, b.vertex);	
 
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		for (int j = 0; j < 4; j++)
 		{
-			if ((getLength(a.vertex[i], b.vertex[j]) + getLength(a.vertex[i + 1], b.vertex[j])) < (getLength(a.vertex[i], a.vertex[i + 1]) + 0.2))
+			if (i < 3)
 			{
-				return true;
-			}
-			if (i == 0)
-			{
-				if ((getLength(a.vertex[0], b.vertex[j]) + getLength(a.vertex[3], b.vertex[j])) < (getLength(a.vertex[0], a.vertex[3]) + 0.2))
+				if ((getLength(a.vertex[i], b.vertex[j]) + getLength(a.vertex[i + 1], b.vertex[j])) 
+					< (getLength(a.vertex[i], a.vertex[i + 1]) + 0.2))
 				{
 					return true;
+				}
+
+				if ((getLength(b.vertex[i], a.vertex[j]) + getLength(b.vertex[i + 1], a.vertex[j])) 
+					< (getLength(b.vertex[i], b.vertex[i + 1]) + 0.2))
+				{
+					return true;
+				}
+			}
+			else
+			{
+				if ((getLength(a.vertex[0], b.vertex[j]) + getLength(a.vertex[3], b.vertex[j])) 
+					< (getLength(a.vertex[0], a.vertex[3]) + 0.2))
+				{
+					return true;
+				}
+
+				if ((getLength(b.vertex[0], a.vertex[j]) + getLength(b.vertex[3], a.vertex[j])) 
+					< (getLength(b.vertex[0], b.vertex[3]) + 0.2))
+				{
+					return true;
+				}				
+			}			
+		}		
+	}
+
+	return false;
+}
+
+
+bool IsInBound(Vector3D point, Bounds bn)
+{
+	if (point.x >= bn.left 
+		&& point.x <= bn.right
+		&& point.y >= bn.bottom
+		&& point.y <= bn.top)
+	{
+		return true;
+	}
+	else 
+	{
+		return false;
+	}
+}
+
+bool IsInCircle(Vector3D pos, Vector3D posCenter, double r)
+{
+	double d = getLength(pos, posCenter);
+	if (d > r)
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
+
+Vector3D GetRandomPos(Bounds bn)
+{
+    Vector3D pos;
+	srand( (unsigned)time( NULL ) );
+    pos.x = ((double)(rand() % 100) / 100.0) * (bn.right - bn.left) + bn.left; 
+    pos.y = ((double)(rand() % 100) / 100.0) * (bn.top - bn.bottom) + bn.bottom; 
+
+    return pos;
+}  
+
+void GetAvailablePositions(Bounds bn, vector<Robot> vBlock, vector<Vector3D>& vAvailable, int n)
+{
+	//
+	Vector3D pos = {0, 0, 0};
+	Robot r = {pos, 0, 0, 0};
+	vAvailable.resize(n);
+	int i = 0, j = 0; 
+	for (i=0; i<n; i++)
+	{		
+		while (1)
+		{
+			r.pos = GetRandomPos(bn);
+			for (j=0; j<vBlock.size(); j++)
+			{
+				if (getLength(r.pos, vBlock[j].pos) < 12.0)
+				{	
+					j = -1; 
+					break;
+				}
+			}
+
+			if (j != -1)
+			{
+				vAvailable[i] = r.pos;
+				vBlock.push_back(r);
+				break;
+			}
+		}
+	}
+}
+
+void CheckFBFirstRobots(Robot Posxianbai[], Vector3D posDesired, Bounds bnTest, Bounds bnFBQuarter, Bounds bnPos)
+{
+	//
+	int nFBRobot = -1;
+	int i = 0, j = 0;
+	for (i=0; i<5; i++)
+	{
+		if (IsInBound(Posxianbai[i].pos, bnTest))
+		{
+			nFBRobot = i;
+			break;
+		}
+	}
+
+	// If none is for kicking, robot 4 will be the FB kicker.
+	if (nFBRobot == -1)
+	{
+		Posxianbai[4].pos = posDesired;
+		nFBRobot = 4;
+	}
+
+	vector<Robot> vBlock(Posxianbai, Posxianbai+5);
+	vector<int> vIn;
+	int nInvalid = 0;
+	// 0: Goalkeeper, nFBRobot: FB kicker
+	for (i=1; i<5; i++)
+	{
+		if (i!= nFBRobot && IsInBound(Posxianbai[i].pos, bnFBQuarter))
+		{
+			vIn.push_back(i);
+			nInvalid++;
+		}
+	}
+
+	if (nInvalid > 0)
+	{				
+		vector<Vector3D> vAvailablePos;
+		GetAvailablePositions(bnPos, vBlock, vAvailablePos, nInvalid);
+		for (i=0; i<nInvalid; i++)
+		{
+			Posxianbai[vIn[i]].pos = vAvailablePos[i];
+		}
+	}
+}
+
+void CheckPlaceKickFirstRobots(Robot Posxianbai[], Bounds bnOppField, Bounds bnPos)
+{
+	//
+	int i = 0;
+	Vector3D posCenter = {110, 90, 0};
+	vector<Robot> vBlock(Posxianbai, Posxianbai+5);
+	vector<int> vIn;
+	int nInvalid = 0;
+	
+	for (i=0; i<5; i++)
+	{
+		if (IsInBound(Posxianbai[i].pos, bnOppField)
+			&& !IsInCircle(Posxianbai[i].pos, posCenter, 25))
+		{
+			vIn.push_back(i);
+			nInvalid++;
+		}
+	}
+
+	if (nInvalid > 0)
+	{				
+		vector<Vector3D> vAvailablePos;
+		GetAvailablePositions(bnPos, vBlock, vAvailablePos, nInvalid);
+		for (i=0; i<nInvalid; i++)
+		{
+			Posxianbai[vIn[i]].pos = vAvailablePos[i];
+		}
+	}
+}
+
+void CheckPKFirstRobots(Robot Posxianbai[], Bounds bnVField, Bounds bnPos)
+{
+	//
+	int i = 0;
+	vector<Robot> vBlock(Posxianbai+1, Posxianbai+5);
+	vector<int> vIn;
+	int nInvalid = 0;
+
+	for (i=1; i<5; i++)
+	{
+		if (IsInBound(Posxianbai[i].pos, bnVField))
+		{
+			vIn.push_back(i);
+			nInvalid++;
+		}
+	}
+
+	if (nInvalid > 0)
+	{				
+		vector<Vector3D> vAvailablePos;
+		GetAvailablePositions(bnPos, vBlock, vAvailablePos, nInvalid);
+		for (i=0; i<nInvalid; i++)
+		{
+			Posxianbai[vIn[i]].pos = vAvailablePos[i];
+		}
+	}
+}
+
+void CheckFBLaterRobots(Robot Poshoubai[], Vector3D posDesired, Bounds bnTest, Bounds bnFBQuarter, Bounds bnPos)
+{
+	//
+	int nFBRobot = -1;
+	int i = 0, j = 0;
+	for (i=0; i<5; i++)
+	{
+		if (IsInBound(Poshoubai[i].pos, bnTest))
+		{
+			nFBRobot = i;
+			break;
+		}
+	}
+
+	// If none is for kicking, robot 4 will be the FB kicker.
+	if (nFBRobot == -1)
+	{
+		Poshoubai[4].pos = posDesired;
+		nFBRobot = 4;
+	}
+
+	vector<int> vIn;
+	int nInvalid = 0;
+	// 0: Goalkeeper, nFBRobot: FB kicker
+	for (i=0; i<5; i++)
+	{
+		if (i!= nFBRobot) 
+		{
+			if (IsInBound(Poshoubai[i].pos, bnFBQuarter))
+			{
+				vIn.push_back(i);
+				nInvalid++;
+			}
+			else
+			{
+				for (j=0; j<5; j++)
+				{
+					if (Judge_Collision(Poshoubai[i], Posxianbai[j]))
+					{
+						vIn.push_back(i);
+						nInvalid++;
+						break;
+					}
+				}
+			}
+		}		
+	}
+
+	if (nInvalid > 0)
+	{
+		vector<Robot> vBlock(Poshoubai, Poshoubai+5);
+		for (i=0; i<5; i++)
+		{
+			vBlock.push_back(Posxianbai[i]);
+		}
+
+		vector<Vector3D> vAvailablePos;
+		GetAvailablePositions(bnPos, vBlock, vAvailablePos, nInvalid);
+		for (i=0; i<nInvalid; i++)
+		{
+			Poshoubai[vIn[i]].pos = vAvailablePos[i];
+		}
+	}
+}
+
+void CheckPlaceKickLaterRobots(Robot Poshoubai[], Bounds bnOppField, Bounds bnPos)
+{
+	//
+	int i = 0;
+	Vector3D posCenter = {110, 90, 0};
+	vector<int> vIn;
+	int nInvalid = 0;
+
+	for (i=0; i<5; i++)
+	{
+		if (IsInBound(Poshoubai[i].pos, bnOppField)
+			|| IsInCircle(Poshoubai[i].pos, posCenter, 25))
+		{
+			vIn.push_back(i);
+			nInvalid++;
+		}
+	}
+
+	if (nInvalid > 0)
+	{				
+		vector<Robot> vBlock(Poshoubai, Poshoubai+5);
+		for (i=0; i<5; i++)
+		{
+			vBlock.push_back(Posxianbai[i]);
+		}
+
+		vector<Vector3D> vAvailablePos;
+		GetAvailablePositions(bnPos, vBlock, vAvailablePos, nInvalid);
+		for (i=0; i<nInvalid; i++)
+		{
+			Poshoubai[vIn[i]].pos = vAvailablePos[i];
+		}
+	}
+}
+
+void CheckGKLaterRobots(Robot Poshoubai[], Bounds bnOppField, Bounds bnPos)
+{
+	//
+	int i = 0, j = 0;
+	vector<int> vIn;
+	int nInvalid = 0;
+
+	for (i=0; i<5; i++)
+	{
+		if (IsInBound(Poshoubai[i].pos, bnOppField))
+		{
+			vIn.push_back(i);
+			nInvalid++;
+		}
+		else
+		{
+			for (j=0; j<5; j++)
+			{
+				if (Judge_Collision(Poshoubai[i], Posxianbai[j]))
+				{
+					vIn.push_back(i);
+					nInvalid++;
+					break;
 				}
 			}
 		}
-		for (int i = 0; i < 3; i++)
+	}
+
+	if (nInvalid > 0)
+	{				
+		vector<Robot> vBlock(Poshoubai, Poshoubai+5);
+		for (i=0; i<5; i++)
 		{
-			for (int j = 0; j < 4; j++)
+			vBlock.push_back(Posxianbai[i]);
+		}
+
+		vector<Vector3D> vAvailablePos;
+		GetAvailablePositions(bnPos, vBlock, vAvailablePos, nInvalid);
+		for (i=0; i<nInvalid; i++)
+		{
+			Poshoubai[vIn[i]].pos = vAvailablePos[i];
+		}
+	}
+}
+
+void CheckPKLaterRobots(Robot Poshoubai[], Vector3D posPK, Bounds bnVField, Bounds bnPos)
+{
+	//	
+	int i = 0, j = 0;
+	int nPKRobot = 0;
+	double dMin = getLength(Poshoubai[0].pos, posPK);
+	for (i=1; i<5; i++)
+	{
+		double dT = getLength(Poshoubai[i].pos, posPK);
+		if (dT < dMin)
+		{
+			dMin = dT;
+			nPKRobot = i;			
+		}
+	}
+
+	vector<int> vIn;
+	int nInvalid = 0;
+
+	for (i=0; i<5; i++)
+	{
+		if (i!= nPKRobot) 
+		{
+			if (IsInBound(Poshoubai[i].pos, bnVField))
 			{
-				if ((getLength(b.vertex[i], a.vertex[j]) + getLength(b.vertex[i + 1], a.vertex[j])) < (getLength(b.vertex[i], b.vertex[i + 1]) + 0.2))
+				vIn.push_back(i);
+				nInvalid++;
+			}
+			else
+			{
+				for (j=0; j<5; j++)
 				{
-					return true;
-				}
-				if (i == 0)
-				{
-					if ((getLength(b.vertex[0], a.vertex[j]) + getLength(b.vertex[3], a.vertex[j])) < (getLength(b.vertex[0], b.vertex[3]) + 0.2))
+					if (Judge_Collision(Poshoubai[i], Posxianbai[j]))
 					{
-						return true;
+						vIn.push_back(i);
+						nInvalid++;
+						break;
 					}
 				}
 			}
 		}
 	}
-	return false;
+
+	if (nInvalid > 0)
+	{				
+		vector<Robot> vBlock(Poshoubai, Poshoubai+5);
+		for (i=0; i<5; i++)
+		{
+			vBlock.push_back(Posxianbai[i]);
+		}
+
+		vector<Vector3D> vAvailablePos;
+		GetAvailablePositions(bnPos, vBlock, vAvailablePos, nInvalid);
+		for (i=0; i<nInvalid; i++)
+		{
+			Poshoubai[vIn[i]].pos = vAvailablePos[i];
+		}
+	}
 }
+
 
 REFEREE_API void CheckPosxianbai(Robot Posxianbai[], PlayMode gameState)
 {
+	switch (gameState){
+	case PM_FreeBall_LeftTop:
+		{
+			Vector3D posDesired = {25, 150, 0};
+			Bounds bnTest = {20, 30, 155, 145};  // left, right, top, bottom;
+			Bounds bnFBQuarter = {0, 110, 180, 90};
+			Bounds bnPos = {40, 180, 85, 50};
+			
+			CheckFBFirstRobots(Posxianbai, posDesired, bnTest, bnFBQuarter, bnPos);
+		}
+		break;
+	case PM_FreeBall_LeftBot:
+		{
+			Vector3D posDesired = {25, 30, 0};
+			Bounds bnTest = {20, 30, 35, 25};  // left, right, top, bottom;
+			Bounds bnFBQuarter = {0, 110, 90, 0};
+			Bounds bnPos = {40, 180, 130, 95};
 
+			CheckFBFirstRobots(Posxianbai, posDesired, bnTest, bnFBQuarter, bnPos);
+		}
+		break;
+	case PM_FreeBall_RightTop:
+		{
+			Vector3D posDesired = {195, 150, 0};
+			Bounds bnTest = {190, 200, 155, 145};  // left, right, top, bottom;
+			Bounds bnFBQuarter = {110, 220, 180, 90};
+			Bounds bnPos = {40, 180, 85, 50};
+
+			CheckFBFirstRobots(Posxianbai, posDesired, bnTest, bnFBQuarter, bnPos);
+		}
+		break;
+	case PM_FreeBall_RightBot:
+		{
+			Vector3D posDesired = {195, 30, 0};
+			Bounds bnTest = {190, 200, 35, 25};  // left, right, top, bottom;
+			Bounds bnFBQuarter = {110, 220, 90, 0};
+			Bounds bnPos = {40, 180, 130, 95};
+
+			CheckFBFirstRobots(Posxianbai, posDesired, bnTest, bnFBQuarter, bnPos);
+		}
+		break;
+	case PM_PlaceKick_Yellow:	
+		{
+			Bounds bnOppField = {110, 220, 180, 0}; // left, right, top, bottom;
+			Bounds bnPos = {40, 80, 170, 10};
+			CheckPlaceKickFirstRobots(Posxianbai, bnOppField, bnPos);
+		}
+		break;
+	case PM_PlaceKick_Blue:	
+		{
+			Bounds bnOppField = {0, 110, 180, 0}; // left, right, top, bottom;
+			Bounds bnPos = {140, 180, 170, 10};
+			CheckPlaceKickFirstRobots(Posxianbai, bnOppField, bnPos);
+		}
+		break;
+	case PM_PenaltyKick_Yellow:
+		{
+			Bounds bnGoal = {205, 235, 110, 70};
+			if (IsInBound(Posxianbai[0].pos, bnGoal))
+			{
+				if (Posxianbai[0].pos.x > 225)
+					Posxianbai[0].pos.x = 225;
+				else if (Posxianbai[0].pos.x < 215)
+					Posxianbai[0].pos.x = 215;
+			}
+			else
+			{
+				Posxianbai[0].pos.x = 215;
+				Posxianbai[0].pos.y = 90;
+				Posxianbai[0].rotation = -90;
+			}
+
+			Bounds bnVField = {110, 235, 180, 0};
+			Bounds bnPos = {40, 100, 130, 50};
+
+			CheckPKFirstRobots(Posxianbai, bnVField, bnPos);
+		}
+		break;
+	case PM_PenaltyKick_Blue:
+		{
+			Bounds bnGoal = {-15, 15, 110, 70};
+			if (IsInBound(Posxianbai[0].pos, bnGoal))
+			{
+				if (Posxianbai[0].pos.x > 5)
+					Posxianbai[0].pos.x = 5;
+				else if (Posxianbai[0].pos.x < -5)
+					Posxianbai[0].pos.x = -5;
+			}
+			else
+			{
+				Posxianbai[0].pos.x = 5;
+				Posxianbai[0].pos.y = 90;
+				Posxianbai[0].rotation = 90;
+			}
+
+			Bounds bnVField = {-15, 110, 180, 0};
+			Bounds bnPos = {120, 180, 130, 50};
+
+			CheckPKFirstRobots(Posxianbai, bnVField, bnPos);
+		}
+		break;
+	case PM_FreeKick_Yellow:
+		break;
+	case PM_FreeKick_Blue:
+		break;
+	case PM_GoalKick_Yellow:
+		break;
+	case PM_GoalKick_Blue:
+		break;
+	}
 }
 
 REFEREE_API void CheckPoshoubai(Robot Poshoubai[], PlayMode gameState)
 {
+	switch (gameState){
+	case PM_FreeBall_LeftTop:
+		{
+			Vector3D posDesired = {85, 150, 0};
+			Bounds bnTest = {80, 90, 155, 145};  // left, right, top, bottom;
+			Bounds bnFBQuarter = {0, 110, 180, 90};
+			Bounds bnPos = {40, 180, 85, 50};
 
+			CheckFBLaterRobots(Poshoubai, posDesired, bnTest, bnFBQuarter, bnPos);
+		}
+		break;
+	case PM_FreeBall_LeftBot:
+		{
+			Vector3D posDesired = {85, 30, 0};
+			Bounds bnTest = {80, 90, 35, 25};  // left, right, top, bottom;
+			Bounds bnFBQuarter = {0, 110, 90, 0};
+			Bounds bnPos = {40, 180, 130, 95};
+
+			CheckFBLaterRobots(Poshoubai, posDesired, bnTest, bnFBQuarter, bnPos);
+		}
+		break;
+	case PM_FreeBall_RightTop:
+		{
+			Vector3D posDesired = {135, 150, 0};
+			Bounds bnTest = {130, 140, 155, 145};  // left, right, top, bottom;
+			Bounds bnFBQuarter = {110, 220, 180, 90};
+			Bounds bnPos = {40, 180, 85, 50};
+
+			CheckFBLaterRobots(Poshoubai, posDesired, bnTest, bnFBQuarter, bnPos);
+		}
+		break;
+	case PM_FreeBall_RightBot:
+		{
+			Vector3D posDesired = {135, 30, 0};
+			Bounds bnTest = {130, 140, 35, 25};  // left, right, top, bottom;
+			Bounds bnFBQuarter = {110, 220, 90, 0};
+			Bounds bnPos = {40, 180, 130, 95};
+
+			CheckFBLaterRobots(Poshoubai, posDesired, bnTest, bnFBQuarter, bnPos);
+		}
+		break;
+	case PM_PlaceKick_Yellow:	
+		{
+			Bounds bnOppField = {-15, 110, 180, 0}; // left, right, top, bottom;
+			Bounds bnPos = {140, 180, 170, 10};
+			CheckPlaceKickLaterRobots(Poshoubai, bnOppField, bnPos);
+		}
+		break;
+	case PM_PlaceKick_Blue:	
+		{
+			Bounds bnOppField = {110, 235, 180, 0}; // left, right, top, bottom;
+			Bounds bnPos = {40, 80, 170, 10};
+			CheckPlaceKickLaterRobots(Poshoubai, bnOppField, bnPos);
+		}
+		break;
+	case PM_PenaltyKick_Yellow:
+		{
+			Vector3D posPK = {182.5, 90, 0};
+			Bounds bnVField = {110, 235, 180, 0};
+			Bounds bnPos = {40, 100, 130, 50};
+
+			CheckPKLaterRobots(Poshoubai, posPK, bnVField, bnPos);
+		}
+		break;
+	case PM_PenaltyKick_Blue:
+		{
+			Vector3D posPK = {37.5, 90, 0};
+			Bounds bnVField = {-15, 110, 180, 0};
+			Bounds bnPos = {120, 180, 130, 50};
+
+			CheckPKLaterRobots(Poshoubai, posPK, bnVField, bnPos);
+		}
+		break;
+	case PM_FreeKick_Yellow:
+		break;
+	case PM_FreeKick_Blue:
+		break;
+	case PM_GoalKick_Yellow:
+		{
+			Bounds bnOppField = {-15, 110, 180, 0}; // left, right, top, bottom;
+			Bounds bnPos = {140, 180, 170, 10};
+			CheckGKLaterRobots(Poshoubai, bnOppField, bnPos);
+		}
+		break;
+	case PM_GoalKick_Blue:
+		{
+			Bounds bnOppField = {110, 235, 180, 0}; // left, right, top, bottom;
+			Bounds bnPos = {40, 80, 170, 10};
+			CheckGKLaterRobots(Poshoubai, bnOppField, bnPos);
+		}
+		break;
+	}
 }
 
 REFEREE_API void CheckPosBall(Vector3D &Posball, PlayMode gameState)
@@ -317,7 +912,7 @@ int Team::Judge_PENALTY_KICK(Environment *pEnv)
 	int num1 = 0;    
 	int num2 = 0;    
 	int zong = 0;    
-	int nCycles = 10;
+	int nCycles = 20;  // 2021-10-5  Modified int nCycles = 10;
 	if (pEnv->currentBall.pos.x >= 0 && pEnv->currentBall.pos.x <= 80 && pEnv->currentBall.pos.y >= 30 && pEnv->currentBall.pos.y <= 150)
 	{
 		if (duiwu == 2)     
@@ -791,7 +1386,7 @@ int Team::Judge_GOAL_KICK2(Environment *pEnv)
 	int num4 = 0;    
 	int zong4 = 0;    
 	int robot3 = 0;   
-	int nCycles = 10;
+	int nCycles = 20; // 2021-10-5  Modified int nCycles = 10;
 
 	if (pEnv->currentBall.pos.x >= 140 && pEnv->currentBall.pos.x <= 220 && pEnv->currentBall.pos.y >= 30 && pEnv->currentBall.pos.y <= 150)
 	{
@@ -1357,9 +1952,10 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_LeftBot;
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
-								sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
-								MessageBox(NULL, strMsg, "Hint", MB_OK);
+								// 2021
+								//char strMsg[100] = {0};
+								//sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								//MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 2;
 							}
 						}
@@ -1466,9 +2062,10 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_RightBot;
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
-								sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
-								MessageBox(NULL, strMsg, "Hint", MB_OK);
+								// 2021
+								//char strMsg[100] = {0};
+								//sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								//MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 4;
 							}
 						}
@@ -1581,9 +2178,10 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_LeftTop;
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
-								sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
-								MessageBox(NULL, strMsg, "Hint", MB_OK);
+								// 2021
+								//char strMsg[100] = {0};
+								//sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								//MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 1;
 							}
 						}
@@ -1691,9 +2289,10 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_RightTop;
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
-								sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
-								MessageBox(NULL, strMsg, "Hint", MB_OK);
+								// 2021
+								//char strMsg[100] = {0};
+								//sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								//MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 3;
 							}
 						}
@@ -1804,9 +2403,10 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_LeftTop;
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
-								sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
-								MessageBox(NULL, strMsg, "Hint", MB_OK);
+								// 2021
+								//char strMsg[100] = {0};
+								//sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								//MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 1;
 							}
 						}
@@ -1923,9 +2523,10 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_RightTop;
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
-								sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
-								MessageBox(NULL, strMsg, "Hint", MB_OK);
+								// 2021
+								//char strMsg[100] = {0};
+								//sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								//MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 3;
 							}
 						}
@@ -2045,9 +2646,10 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_LeftBot;
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
-								sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
-								MessageBox(NULL, strMsg, "Hint", MB_OK);
+								// 2021
+								//char strMsg[100] = {0};
+								//sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								//MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 2;
 							}
 						}
@@ -2163,9 +2765,10 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_RightBot; // 2018-8-8 changed from PM_FreeBall_LeftBot
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
-								sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
-								MessageBox(NULL, strMsg, "Hint", MB_OK);
+								// 2021
+								//char strMsg[100] = {0};
+								//sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								//MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 4;  // 2018-8-8 changed from 2
 							}
 						}
@@ -2286,9 +2889,10 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_LeftBot;
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
-								sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
-								MessageBox(NULL, strMsg, "Hint", MB_OK);
+								// 2021
+								//char strMsg[100] = {0};
+								//sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								//MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 2;
 							}
 						}
@@ -2396,9 +3000,10 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_RightBot;
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
-								sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
-								MessageBox(NULL, strMsg, "Hint", MB_OK);
+								// 2021
+								//char strMsg[100] = {0};
+								//sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								//MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 4;
 							}
 						}
@@ -2510,9 +3115,10 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_LeftTop;
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
-								sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
-								MessageBox(NULL, strMsg, "Hint", MB_OK);
+								// 2021
+								//char strMsg[100] = {0};
+								//sprintf(strMsg, "The Yellow team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								//MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 1;
 							}
 						}
@@ -2621,9 +3227,10 @@ int Team::Judge_FREE_BALL(Environment *pEnv)
 							{
 								statespace.gameState = PM_FreeBall_RightTop;
 								Foul_pushball += 1;
-								char strMsg[100] = {0};
-								sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
-								MessageBox(NULL, strMsg, "Hint", MB_OK);
+								// 2021
+								//char strMsg[100] = {0};
+								//sprintf(strMsg, "The Blue team has violated the nopushing rule for %d time(s)!", Foul_pushball);
+								//MessageBox(NULL, strMsg, "Hint", MB_OK);
 								return 3;
 							}
 						}
