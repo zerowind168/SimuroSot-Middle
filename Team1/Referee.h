@@ -14,12 +14,13 @@ Modifications :
 Date          Version           Modifier				  Content
 2018/03/06      0.1             Le Li, Dr.YANG             Create
 2018/05/31      0.1             Le Li, Dr.YANG             Modify
+2021/10/10      0.3             Dr.YANG                    Modify
 </PRE>
 ******************************************************************************** 
 
 * Copyright(c) 2018-, Linquan Yang, All rights reserved. 
 * Contact:	yanglinquan@126.com
-
+* China University of Geosciences.
 *******************************************************************************/
 
 #include "stdafx.h"
@@ -85,6 +86,8 @@ struct ReferData
 	PlayMode gameState;
 	char blueTeamName[50];
 	char yellowTeamName[50];
+	int nBlueVPushTime;  // 2021
+	int nYellowVPushTime;  // 2021
 };
 
 

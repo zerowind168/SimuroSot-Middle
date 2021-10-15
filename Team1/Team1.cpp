@@ -6,7 +6,7 @@ File			 : Team1.cpp
 Relevent File(s) : Team1.h, Referee.h
 Function(s)      : The automatic referee and strategy agency for FIRA MiroSot/SimuroSot.
 Author(s)        : Le Li, Linquan Yang
-Version          : 0.2
+Version          : 0.3
 --------------------------------------------------------------------------------
 Remarks           : -
 --------------------------------------------------------------------------------
@@ -14,6 +14,7 @@ Modifications :
 Date          Version           Modifier				  Content
 2018/03/06      0.1             Le Li, Dr.YANG             Create
 2018/06/12      0.2             Le Li, Dr.YANG             Modify
+2021/10/10      0.3             Dr.YANG                    Modify
 </PRE>
 ******************************************************************************** 
 
@@ -45,6 +46,7 @@ STRATEGY_API void SetBall(PlayMode gameState, Vector3D * pBall);
 STRATEGY_API void RunStrategy(Environment *pEnv);
 
 STRATEGY_API Team team1;
+STRATEGY_API Team team2;
 STRATEGY_API PlayMode gamestate;
 STRATEGY_API Robot Posxianbai[5];         
 STRATEGY_API Robot Copy_Posxianbai[5];    
@@ -86,8 +88,9 @@ extern "C" TEAM1_API void Strategy ( Environment *pEnv )
 {
 	ChangeSystem(pEnv);
 	Environment oEnv = *pEnv;
-	if (team1.Foul_pushball >=4)
-		MessageBox(NULL, "The Blue team has violated the nopushing rule for four times!", "Blue", MB_OK); 
+	// 2021
+	//if (team1.Foul_pushball >=4)
+	//	MessageBox(NULL, "The Blue team has violated the no pushing rule for four times!", "Blue", MB_OK); 
 
 	if (team1.statespace.pastTime == 0)
 	{		
@@ -142,6 +145,8 @@ extern "C" TEAM1_API void Strategy ( Environment *pEnv )
 			else
 				rData.xianbai = 1;
 
+			rData.nBlueVPushTime = team1.Foul_pushball;  // 2021
+			rData.nYellowVPushTime = team2.Foul_pushball;  // 2021
 			rData.gameState = team1.statespace.gameState;
 			strcpy(rData.blueTeamName, strBlueName);
 			strcpy(rData.yellowTeamName, strYellowName);
