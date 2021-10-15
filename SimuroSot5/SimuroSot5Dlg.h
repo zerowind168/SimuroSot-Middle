@@ -51,6 +51,8 @@ struct ReferData
 	PlayMode gameState;
 	char blueTeamName[50];
 	char yellowTeamName[50];
+	int nBlueVPushTime;  // 2021
+	int nYellowVPushTime;  // 2021
 };
 
 

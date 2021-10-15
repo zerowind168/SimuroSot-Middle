@@ -58,7 +58,8 @@ CSimuroSot5Dlg::CSimuroSot5Dlg(CWnd* pParent /*=NULL*/)
 	nPause = 0;
 	nPastSecond = 0;
 	nBlueGoals = 0;
-	nYellowGoals = 0;
+	nYellowGoals = -1;
+	memset(&m_data, 0, sizeof(ReferData));
 }
 
 void CSimuroSot5Dlg::DoDataExchange(CDataExchange* pDX)
@@ -114,6 +115,8 @@ BOOL CSimuroSot5Dlg::OnInitDialog()
 	// TODO: Add extra initialization here
 	::ShellExecute(NULL, "OPEN", ".\\WorldModel.exe", NULL, NULL, SW_NORMAL);
 	SleepEx(2000, TRUE);
+
+	SetDlgItemText(IDC_STATIC_SCORE, "0  :  0");
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -215,9 +218,9 @@ void CSimuroSot5Dlg::OnTimer(UINT_PTR nIDEvent)
 	{
 		nPastSecond++;
 		CString strTime;
-		strTime.Format("%d Seconds.", 300-nPastSecond);	
+		strTime.Format("  %d  ", 300-nPastSecond);	
 		SetDlgItemText(IDC_STATIC_TIME, strTime);
-		if (nPastSecond == 300)
+		if (nPastSecond >= 300)
 			OnBnClickedBnPause();
 	}
 	else if (nIDEvent == 1)
@@ -231,21 +234,50 @@ void CSimuroSot5Dlg::OnTimer(UINT_PTR nIDEvent)
 			CPlatformOperator opr;
 
 			CString strScore;
+			static int nBPushTimeLast = 0;   
+			static int nYPushTimeLast = 0; 
 			switch (m_data.gameState)
 			{
 			case PM_FreeBall_LeftTop:			
 			case PM_FreeBall_LeftBot:
 			case PM_FreeBall_RightTop: 
 			case PM_FreeBall_RightBot:  
+				{ 
+					static int nB4 = 0;
+					static int nY4 = 0;
+					nB4 += (m_data.nBlueVPushTime - nBPushTimeLast); 
+					nY4 += (m_data.nYellowVPushTime - nYPushTimeLast); 
+
+					if (nB4 >= 4)
+					{
+						nYellowGoals++;
+						nB4 = 0;
+					}
+					if (nY4 >= 4)
+					{
+						nBlueGoals++;
+						nY4 = 0;
+					}
+
+					nBPushTimeLast = m_data.nBlueVPushTime;
+					nYPushTimeLast = m_data.nYellowVPushTime;
+
+					strScore.Format("%d  :  %d", nYellowGoals, nBlueGoals);
+					SetDlgItemText(IDC_STATIC_SCORE, strScore);
+
+					CString strPushTime;
+					strPushTime.Format(" %d   :   %d ", m_data.nYellowVPushTime, m_data.nBlueVPushTime);
+					SetDlgItemText(IDC_STATIC_PUSHTIME, strPushTime);					
+				}
 				opr.SetFreeBall();break;
 			case PM_PlaceKick_Yellow:  
 				nBlueGoals++;
-				strScore.Format("%d : %d", nYellowGoals-1, nBlueGoals);
+				strScore.Format("%d  :  %d", nYellowGoals, nBlueGoals);
 				SetDlgItemText(IDC_STATIC_SCORE, strScore);
 				opr.SetPlaceKick('Y');break;
 			case PM_PlaceKick_Blue:     
 				nYellowGoals++;
-				strScore.Format("%d : %d", nYellowGoals-1, nBlueGoals);
+				strScore.Format("%d  :  %d", nYellowGoals, nBlueGoals);
 				SetDlgItemText(IDC_STATIC_SCORE, strScore);
 				opr.SetPlaceKick('B');break;
 			case PM_PenaltyKick_Yellow:				
@@ -278,7 +310,7 @@ void CSimuroSot5Dlg::OnTimer(UINT_PTR nIDEvent)
 						m_data.Poshoubai[i].rotation);				
 				}
 			}
-			if (m_data.xianbai == 2)
+			else if (m_data.xianbai == 2)
 			{
 				for (int i = 0; i < 5; i++)
 				{
