@@ -45,6 +45,7 @@ STRATEGY_API void SetLaterRobots(PlayMode gameState, Robot formerRobots[], Vecto
 STRATEGY_API void SetBall(PlayMode gameState, Vector3D * pBall); 
 STRATEGY_API void RunStrategy(Environment *pEnv);
 
+STRATEGY_API Team team1;
 STRATEGY_API Team team2;
 STRATEGY_API PlayMode gamestate;		 
 STRATEGY_API Robot Posxianbai[5];        
@@ -83,8 +84,9 @@ extern "C" TEAM2_API void Destroy ( Environment *pEnv )
 extern "C" TEAM2_API void Strategy ( Environment *pEnv )
 {
 	ChangeSystem(pEnv);
-	if (team2.Foul_pushball >=4)
-		MessageBox(NULL, "The Yellow team has violated the nopushing rule for four times!", "Yellow", MB_OK); 
+	// 2021
+	//if (team2.Foul_pushball >=4)
+	//	MessageBox(NULL, "The Yellow team has violated the nopushing rule for four times!", "Yellow", MB_OK); 
 
 	if (team2.statespace.pastTime == 0)
 	{
@@ -139,6 +141,8 @@ extern "C" TEAM2_API void Strategy ( Environment *pEnv )
 			else
 				rData.xianbai = 1;
 
+			rData.nBlueVPushTime = team1.Foul_pushball;  // 2021
+			rData.nYellowVPushTime = team2.Foul_pushball;  // 2021
 			rData.gameState = team2.statespace.gameState;
 			strcpy(rData.blueTeamName, strBlueName);
 			strcpy(rData.yellowTeamName, strYellowName);
